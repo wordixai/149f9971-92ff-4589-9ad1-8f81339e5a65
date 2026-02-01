@@ -4,10 +4,136 @@
 
 @layer base {
   :root {
-   
+    /* Dark theme as default - futuristic AI aesthetic */
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 8%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 187 92% 55%;
+    --primary-foreground: 222 47% 6%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 55%;
+
+    --accent: 280 85% 65%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 187 92% 55%;
+
+    --radius: 0.75rem;
+
+    /* Custom gradients */
+    --hero-gradient: linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(240 50% 10%) 50%, hsl(222 47% 6%) 100%);
+    --card-gradient: linear-gradient(135deg, hsl(217 33% 12% / 0.8) 0%, hsl(217 33% 8% / 0.6) 100%);
+    --glow-gradient: linear-gradient(135deg, hsl(187 92% 55% / 0.2) 0%, hsl(280 85% 65% / 0.2) 100%);
+
+    /* Custom shadows */
+    --shadow-glow: 0 0 40px hsl(187 92% 55% / 0.3);
+    --shadow-glow-sm: 0 0 20px hsl(187 92% 55% / 0.2);
+    --shadow-card: 0 8px 32px hsl(0 0% 0% / 0.3);
   }
 
   .dark {
-
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
   }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-card-gradient backdrop-blur-xl border border-border/50 rounded-lg;
+  }
+
+  .glow-border {
+    @apply relative;
+  }
+
+  .glow-border::before {
+    content: '';
+    @apply absolute -inset-[1px] rounded-lg bg-glow-gradient opacity-0 transition-opacity duration-300;
+    z-index: -1;
+  }
+
+  .glow-border:hover::before {
+    @apply opacity-100;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent;
+    background-size: 200% auto;
+  }
+
+  .animate-gradient {
+    animation: gradient-shift 3s ease infinite;
+  }
+
+  .upload-zone {
+    @apply border-2 border-dashed border-border/50 rounded-lg transition-all duration-300;
+  }
+
+  .upload-zone:hover {
+    @apply border-primary/50 bg-primary/5;
+  }
+
+  .upload-zone.active {
+    @apply border-primary bg-primary/10;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
 }
