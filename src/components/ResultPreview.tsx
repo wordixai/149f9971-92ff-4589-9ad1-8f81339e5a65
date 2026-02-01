@@ -46,11 +46,11 @@ export function ResultPreview({
         throw new Error(data.error);
       }
 
-      if (data?.image) {
-        setGeneratedImage(data.image);
-        toast.success("换装生成成功！");
+      if (data?.resultImage) {
+        setGeneratedImage(data.resultImage);
+        toast.success(data.message || "换装生成成功！");
       } else {
-        throw new Error("未能生成换装图片，请重试");
+        throw new Error(data?.message || "未能生成换装图片，请重试");
       }
     } catch (err) {
       console.error("Virtual try-on error:", err);

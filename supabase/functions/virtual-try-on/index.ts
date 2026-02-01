@@ -138,18 +138,19 @@ Requirements:
 
     console.log("Virtual try-on completed successfully");
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        image: generatedImageUrl,
-        message: textContent,
-        model: "google/gemini-3-pro-image-preview"
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders }
-      }
-    );
+    // 包装响应 - 返回简洁的格式
+    const virtualTryOnResponse = {
+      resultImage: generatedImageUrl,
+      message: generatedImageUrl ? "换装效果生成成功" : "未能生成图片，请重试",
+    };
+
+    return new Response(JSON.stringify(virtualTryOnResponse), {
+      status: generatedImageUrl ? 200 : 400,
+      headers: {
+        "Content-Type": "application/json",
+        ...corsHeaders
+      },
+    });
 
   } catch (error: any) {
     console.error("Virtual try-on error:", error);

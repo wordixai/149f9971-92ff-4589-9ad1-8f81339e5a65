@@ -32,5 +32,26 @@
       "usageCount": 1,
       "lastUsedAt": 1769941413382
     }
+  },
+  "projects": {
+    "/app": {
+      "allowedTools": [],
+      "mcpContextUris": [],
+      "mcpServers": {},
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": false,
+      "projectOnboardingSeenCount": 0,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false,
+      "exampleFiles": [
+        "Index.tsx",
+        "ResultPreview.tsx",
+        "StyleSelector.tsx",
+        "index.css",
+        "tailwind.config.ts"
+      ],
+      "exampleFilesGeneratedAt": 1769942020358
+    }
   }
 }
