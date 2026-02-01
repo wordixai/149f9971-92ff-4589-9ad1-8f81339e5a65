@@ -8,6 +8,7 @@ import { ResultPreview } from "../components/ResultPreview";
 export default function Index() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
+  const [clothingImage, setClothingImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -15,14 +16,9 @@ export default function Index() {
     editorRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleGenerate = () => {
-    if (uploadedImage && selectedStyle) {
-      setIsProcessing(true);
-      // Simulate processing time
-      setTimeout(() => {
-        setIsProcessing(false);
-      }, 2500);
-    }
+  const handleStyleSelect = (styleId: string, imageUrl: string) => {
+    setSelectedStyle(styleId);
+    setClothingImage(imageUrl);
   };
 
   return (
@@ -45,7 +41,7 @@ export default function Index() {
             />
             <StyleSelector
               selectedStyle={selectedStyle}
-              onStyleSelect={setSelectedStyle}
+              onStyleSelect={handleStyleSelect}
             />
           </div>
 
@@ -54,8 +50,9 @@ export default function Index() {
             <ResultPreview
               originalImage={uploadedImage}
               selectedStyle={selectedStyle}
+              clothingImage={clothingImage}
               isProcessing={isProcessing}
-              onGenerate={handleGenerate}
+              onProcessingChange={setIsProcessing}
             />
           </div>
         </div>
@@ -71,7 +68,7 @@ export default function Index() {
           {[
             {
               title: "AI 智能换装",
-              description: "采用先进的深度学习算法，精准识别人体姿态，实现自然逼真的换装效果",
+              description: "采用 Gemini 3 Pro 图像生成模型，精准识别人体姿态，实现自然逼真的换装效果",
               icon: "🤖"
             },
             {
@@ -81,7 +78,7 @@ export default function Index() {
             },
             {
               title: "即时预览",
-              description: "无需漫长等待，几秒钟内即可看到换装效果，轻松找到最适合你的风格",
+              description: "云端 AI 处理，几秒钟内即可看到换装效果，轻松找到最适合你的风格",
               icon: "⚡"
             }
           ].map((feature, index) => (

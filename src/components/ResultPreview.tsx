@@ -1,43 +1,86 @@
-import { useState, useEffect } from "react";
-import { Wand2, Download, RefreshCw, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { Wand2, Download, RefreshCw, AlertCircle } from "lucide-react";
 import { Button } from "./ui/button";
+import { supabase } from "../lib/supabase";
+import { toast } from "sonner";
 
 interface ResultPreviewProps {
   originalImage: string | null;
   selectedStyle: string | null;
+  clothingImage: string | null;
   isProcessing: boolean;
-  onGenerate: () => void;
+  onProcessingChange: (processing: boolean) => void;
 }
 
-// Mock generated images for demo
-const mockResults: Record<string, string> = {
-  casual: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&h=700&fit=crop",
-  formal: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=700&fit=crop",
-  sporty: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=500&h=700&fit=crop",
-  vintage: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500&h=700&fit=crop",
-  streetwear: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=500&h=700&fit=crop",
-  elegant: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=500&h=700&fit=crop",
-};
-
-export function ResultPreview({ originalImage, selectedStyle, isProcessing, onGenerate }: ResultPreviewProps) {
+export function ResultPreview({
+  originalImage,
+  selectedStyle,
+  clothingImage,
+  isProcessing,
+  onProcessingChange,
+}: ResultPreviewProps) {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isProcessing && selectedStyle) {
-      // Simulate AI generation
-      const timer = setTimeout(() => {
-        setGeneratedImage(mockResults[selectedStyle] || mockResults.casual);
-      }, 2000);
-      return () => clearTimeout(timer);
+  const canGenerate = originalImage && clothingImage && !isProcessing;
+
+  const handleGenerate = async () => {
+    if (!originalImage || !clothingImage) return;
+
+    setError(null);
+    onProcessingChange(true);
+
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke('virtual-try-on', {
+        body: {
+          personImage: originalImage,
+          clothingImage: clothingImage,
+        }
+      });
+
+      if (invokeError) {
+        throw invokeError;
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      if (data?.image) {
+        setGeneratedImage(data.image);
+        toast.success("换装生成成功！");
+      } else {
+        throw new Error("未能生成换装图片，请重试");
+      }
+    } catch (err) {
+      console.error("Virtual try-on error:", err);
+      const errorMessage = err instanceof Error ? err.message : "换装失败，请重试";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      onProcessingChange(false);
     }
-  }, [isProcessing, selectedStyle]);
-
-  const canGenerate = originalImage && selectedStyle && !isProcessing;
+  };
 
   const handleDownload = () => {
     if (generatedImage) {
-      window.open(generatedImage, '_blank');
+      // For base64 images, create a download link
+      if (generatedImage.startsWith('data:')) {
+        const link = document.createElement('a');
+        link.href = generatedImage;
+        link.download = `ai-try-on-${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        window.open(generatedImage, '_blank');
+      }
     }
+  };
+
+  const handleReset = () => {
+    setGeneratedImage(null);
+    setError(null);
   };
 
   return (
@@ -48,7 +91,7 @@ export function ResultPreview({ originalImage, selectedStyle, isProcessing, onGe
       </h3>
 
       <div className="glass-card p-6">
-        {!originalImage || !selectedStyle ? (
+        {!originalImage || !clothingImage ? (
           <div className="h-80 flex flex-col items-center justify-center text-center">
             <div className="p-4 rounded-full bg-muted/50 mb-4">
               <Wand2 className="w-8 h-8 text-muted-foreground" />
@@ -67,7 +110,21 @@ export function ResultPreview({ originalImage, selectedStyle, isProcessing, onGe
               <Wand2 className="w-8 h-8 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
             </div>
             <p className="text-foreground font-medium mt-6">AI 正在生成中...</p>
-            <p className="text-muted-foreground text-sm mt-2">请稍候，这可能需要几秒钟</p>
+            <p className="text-muted-foreground text-sm mt-2">请稍候，这可能需要 10-30 秒</p>
+          </div>
+        ) : error ? (
+          <div className="h-80 flex flex-col items-center justify-center text-center">
+            <div className="p-4 rounded-full bg-destructive/10 mb-4">
+              <AlertCircle className="w-8 h-8 text-destructive" />
+            </div>
+            <p className="text-destructive font-medium">{error}</p>
+            <Button
+              onClick={handleGenerate}
+              className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              重试
+            </Button>
           </div>
         ) : generatedImage ? (
           <div className="animate-scale-in">
@@ -91,7 +148,10 @@ export function ResultPreview({ originalImage, selectedStyle, isProcessing, onGe
             </div>
             <div className="flex gap-3">
               <Button
-                onClick={onGenerate}
+                onClick={() => {
+                  handleReset();
+                  handleGenerate();
+                }}
                 variant="outline"
                 className="flex-1 border-border/50 hover:border-primary/50"
               >
@@ -111,7 +171,7 @@ export function ResultPreview({ originalImage, selectedStyle, isProcessing, onGe
           <div className="h-80 flex flex-col items-center justify-center">
             <p className="text-muted-foreground mb-6">已准备就绪，点击生成查看效果</p>
             <Button
-              onClick={onGenerate}
+              onClick={handleGenerate}
               disabled={!canGenerate}
               size="lg"
               className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow hover:shadow-glow-sm transition-all duration-300 px-8"

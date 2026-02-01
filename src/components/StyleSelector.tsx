@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Shirt, Check } from "lucide-react";
 
 interface Style {
@@ -8,7 +7,7 @@ interface Style {
   description: string;
 }
 
-const styles: Style[] = [
+export const clothingStyles: Style[] = [
   {
     id: "casual",
     name: "休闲风格",
@@ -49,7 +48,7 @@ const styles: Style[] = [
 
 interface StyleSelectorProps {
   selectedStyle: string | null;
-  onStyleSelect: (styleId: string) => void;
+  onStyleSelect: (styleId: string, imageUrl: string) => void;
 }
 
 export function StyleSelector({ selectedStyle, onStyleSelect }: StyleSelectorProps) {
@@ -61,10 +60,10 @@ export function StyleSelector({ selectedStyle, onStyleSelect }: StyleSelectorPro
       </h3>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {styles.map((style, index) => (
+        {clothingStyles.map((style, index) => (
           <div
             key={style.id}
-            onClick={() => onStyleSelect(style.id)}
+            onClick={() => onStyleSelect(style.id, style.image)}
             className={`
               glass-card overflow-hidden cursor-pointer transition-all duration-300 glow-border
               hover:scale-[1.02] animate-fade-up
